@@ -12,3 +12,4 @@ void printBIData(BigInteger* b);
 BigInteger* resizeBI(BigInteger* b, int s);
 BigInteger* addBI(BigInteger* a, BigInteger* b);
 BigInteger* negateBI(BigInteger* b);
+BigInteger* subtractBI(BigInteger* a, BigInteger* b);

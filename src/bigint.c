@@ -266,6 +266,16 @@ BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
     return a;
 }
 
+BigInteger* subtractBI(BigInteger* a, BigInteger* b)
+{
+    BigInteger c = copyBI(b);
+    BigInteger *pc = &c;
+    pc = negateBI(pc);
+    a = addBI(a, pc);
+    deleteBI(pc);
+    return a;
+}
+
 BigInteger* leftShiftBI(BigInteger* b, int amount)
 {
     if (amount < 0)
