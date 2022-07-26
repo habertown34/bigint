@@ -10,7 +10,7 @@ int main()
     BigInteger* p = &b;
     b.size = 1;
     b.data = (unsigned int*) malloc((b.size)* sizeof(unsigned int));
-    b.data[0] = 12;
+    b.data[0] = 100;
     //b.data[1] = 0b01111111111111111111111111111111;
     
     BigInteger b2;
@@ -21,7 +21,7 @@ int main()
     //b2.data[1] = 0b10000000000000000000000000000000;
     printBIData(p);
     printBIData(p2);    
-    p = subtractBI(p, p2);
+    p = times10(p);
     printBIData(p);
     //printBIData(p2);
     return 0;

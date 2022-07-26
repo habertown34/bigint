@@ -13,3 +13,5 @@ BigInteger* resizeBI(BigInteger* b, int s);
 BigInteger* addBI(BigInteger* a, BigInteger* b);
 BigInteger* negateBI(BigInteger* b);
 BigInteger* subtractBI(BigInteger* a, BigInteger* b);
+BigInteger* leftShiftBI(BigInteger* b, int amount);
+BigInteger* times10(BigInteger* b);

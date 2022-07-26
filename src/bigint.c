@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "bigint.h"
 
@@ -241,7 +242,7 @@ BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
         {
             //positive overflow
             a->size += 1;
-            a->data = realloc(a->data, a->size - 1);
+            a->data = realloc(a->data, a->size * sizeof(unsigned int));
             if (a->data == NULL)
             {
                 printf("Error: Reallocationg a in a positive overflow");
@@ -253,7 +254,7 @@ BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
         {
             //negative overflow
             a->size += 1;
-            a->data = realloc(a->data, a->size - 1);
+            a->data = realloc(a->data, a->size  * sizeof(unsigned int));
             if (a->data == NULL)
             {
                 printf("Error: Reallocationg a in a positive overflow");
@@ -284,6 +285,11 @@ BigInteger* leftShiftBI(BigInteger* b, int amount)
         exit(EXIT_FAILURE);
     }
     int i;
+    int bIsNegative = msbIsOneBI(b);
+    if (bIsNegative)
+    { // left shift only makes sense on positive Integers
+        b = negateBI(b);
+    }
     for(i = 0; i < amount; i++)
     {
         int j;
@@ -302,14 +308,52 @@ BigInteger* leftShiftBI(BigInteger* b, int amount)
             
             // if this is the highest part bits of the number, and there is an overflow
             // add new number
-            if ((j == b->size - 1) && overflow)
+            if (j == b->size - 1)
             {
-                ;
+                overflow = msbIsOneInt(b->data[j]);
+                if (overflow)
+                {
+                    //positive overflow
+                    b->size += 1;
+                    b->data = realloc(b->data, b->size  * sizeof(unsigned int));
+                    if (b->data == NULL)
+                    {
+                        printf("Error: Reallocationg b in a positive overflow in leftSHift");
+                        exit(EXIT_FAILURE);
+                    }
+                    b->data[b->size - 1] = 0;
+                }
             }
         }
     }
-    //TODO
+    if (bIsNegative)
+    {
+        b = negateBI(b);
+    }
     
     return b;
 }
 
+BigInteger* times10(BigInteger* b)
+{
+    BigInteger a = copyBI(b);
+    BigInteger* pa = &a;
+    pa = leftShiftBI(pa, 1);
+    b = leftShiftBI(b, 3);
+    b = addBI(b, pa);
+    deleteBI(pa);
+    return b;
+}
+
+BigInteger* newBigInteger(BigInteger* b, char* str)
+{
+    int l = strlen(str);
+    int negative = (*str == '-');
+    if (negative)
+    {
+        str++;
+        l -= 1;
+    }
+    b->size = 1;
+    b->data = (unsigned int) malloc(size)
+}
