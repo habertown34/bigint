@@ -232,7 +232,7 @@ BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
      */
     if ((aIsNegative && !bIsNegative) || (!aIsNegative && bIsNegative))
     {
-        ; // TODO
+        a = trimBI(a);
     }
     else
     {
