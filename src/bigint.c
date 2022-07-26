@@ -112,6 +112,9 @@ BigInteger* negateBI(BigInteger* b);
 */
 BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
 {
+    int aIsNegative = msbIsOneBI(a);
+    int bIsNegative = msbIsOneBI(b);
+
     int size_max = max(a->size, b->size);
     if (a->size != size_max)
     {
@@ -175,8 +178,41 @@ BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
             a->data[i] += 1;
         }
     }
-    
-    //TODO
+    /*
+     * If a or b (only one of them) is negative, then we need to check if we can reduce the number instead of checking for overflow
+     */
+    if ((aIsNegative && !bIsNegative) || (!aIsNegative && bIsNegative))
+    {
+        ; // TODO
+    }
+    else
+    {
+        int resultIsNegative = msbIsOneBI(a);
+        if(!aIsNegative && resultIsNegative)
+        {
+            //positive overflow
+            a->size += 1;
+            a->data = realloc(a->data, a->size - 1);
+            if (a->data == NULL)
+            {
+                printf("Error: Reallocationg a in a positive overflow");
+                exit(EXIT_FAILURE);
+            }
+            a->data[a->size - 1] = 0;
+        }
+        if(aIsNegative && !resultIsNegative)
+        {
+            //negative overflow
+            a->size += 1;
+            a->data = realloc(a->data, a->size - 1);
+            if (a->data == NULL)
+            {
+                printf("Error: Reallocationg a in a positive overflow");
+                exit(EXIT_FAILURE);
+            }
+            a->data[a->size - 1] = UINT_MAX;            
+        }
+    }
     deleteBI(c);
     return a;
 }

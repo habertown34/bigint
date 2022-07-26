@@ -17,7 +17,7 @@ int main()
     BigInteger* p2 = &b2;
     b2.size = 1;
     b2.data = (unsigned int*) malloc((b2.size)* sizeof(unsigned int));
-    b2.data[0] = 2;
+    b2.data[0] = 1;
     //b2.data[1] = 1;
     printBIData(p);
     printBIData(p2);    
