@@ -8,10 +8,10 @@ int main()
 {
     BigInteger b;
     BigInteger* p = &b;
-    b.size = 1;
+    b.size = 2;
     b.data = (unsigned int*) malloc((b.size)* sizeof(unsigned int));
-    b.data[0] = 0b10000000000000000000000000000000;
-    //b.data[1] = 1;
+    b.data[0] = UINT_MAX;
+    b.data[1] = 1;
     
     BigInteger b2;
     BigInteger* p2 = &b2;
@@ -20,9 +20,9 @@ int main()
     b2.data[0] = -1;
     //b2.data[1] = 1;
     printBIData(p);
-    printBIData(p2);    
-    p = addBI(p,p2);
+    //(p2);    
+    p = negateBI(p);
     printBIData(p);
-    printBIData(p2);
+    //printBIData(p2);
     return 0;
 }

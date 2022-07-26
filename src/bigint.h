@@ -1,3 +1,4 @@
+#include <limits.h>
 
 typedef struct
 {
@@ -10,3 +11,4 @@ void deleteBI(BigInteger* b);
 void printBIData(BigInteger* b);
 BigInteger* resizeBI(BigInteger* b, int s);
 BigInteger* addBI(BigInteger* a, BigInteger* b);
+BigInteger* negateBI(BigInteger* b);

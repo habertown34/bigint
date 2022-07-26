@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
 
 #include "bigint.h"
 
@@ -38,16 +37,6 @@ int msbIsOneBI(BigInteger* b)
     return msbIsOneInt(b->data[b->size - 1]);
 }
 
-int times10(int num)
-{
-    return (num << 1) + (num << 3);
-}
-
-int negate(int num)
-{
-    return (~num) + 1;
-}
-
 int max(int a, int b)
 {
     if (a > b) return a;
@@ -77,6 +66,48 @@ void deleteBI(BigInteger* b)
     free(b->data);
 }
 
+BigInteger* trimBI(BigInteger* b)
+{
+    int isNegative = msbIsOneBI(b);
+    int oldSize = b->size;
+    int newSize = b->size;
+    int i;
+
+    if (!isNegative)
+    {
+        for(i = oldSize - 1; i > 0; i--)
+        {
+            if (b->data[i] == 0)
+            {
+                newSize -= 1;
+            }
+        }
+    }
+    else // b is negative
+    {
+        for(i = oldSize - 1; i > 0; i--)
+        {
+            if (b->data[i] == UINT_MAX)
+            {
+                newSize -= 1;
+            }
+        }
+    }
+
+    if (newSize != oldSize)
+    {
+        b->data = realloc(b->data, newSize * sizeof(unsigned int));
+        if (b->data == NULL)
+        {
+            printf("Error: Reallocation in trimBI failed\n");
+            exit(EXIT_FAILURE);
+        }
+        b->size = newSize;
+    }
+
+    return b;
+}
+
 BigInteger* resizeBI(BigInteger* b, int s)
 {
     int isNegative = msbIsOneBI(b);
@@ -101,7 +132,25 @@ BigInteger* resizeBI(BigInteger* b, int s)
     return b;
 }
 
-BigInteger* negateBI(BigInteger* b);
+BigInteger* negateBI(BigInteger* b)
+{
+    int i;
+    for(i = 0; i < b->size; i++)
+    {
+        b->data[i] = ~(b->data[i]);
+
+    }
+
+    BigInteger one;
+    one.size = 1;
+    one.data = (unsigned int*) malloc(sizeof(unsigned int));
+    one.data[0] = 1;
+    b = addBI(b, &one);
+    deleteBI(&one);
+    b = trimBI(b);
+
+    return b;
+}
 
 /*
 * What we need to do:
