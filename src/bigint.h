@@ -15,3 +15,4 @@ BigInteger* negateBI(BigInteger* b);
 BigInteger* subtractBI(BigInteger* a, BigInteger* b);
 BigInteger* leftShiftBI(BigInteger* b, int amount);
 BigInteger* times10(BigInteger* b);
+BigInteger* newBigInteger(BigInteger* b, const char* str);
