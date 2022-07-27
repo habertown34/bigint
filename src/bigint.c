@@ -227,6 +227,7 @@ BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
             }
             a->data[i] += 1;
         }
+        oldOverflow = overflow;
     }
     /*
      * If a or b (only one of them) is negative, then we need to check if we can reduce the number instead of checking for overflow
@@ -345,15 +346,70 @@ BigInteger* times10(BigInteger* b)
     return b;
 }
 
-BigInteger* newBigInteger(BigInteger* b, char* str)
+BigInteger* newBigInteger(BigInteger* b, const char* str)
 {
     int l = strlen(str);
-    int negative = (*str == '-');
+    printf("l = %d\n", l);
+    int negative = (str[0] == '-');
+    printf("%d\n", negative);
     if (negative)
     {
         str++;
         l -= 1;
     }
     b->size = 1;
-    b->data = (unsigned int) malloc(size)
+    b->data = (unsigned int*) malloc(sizeof(unsigned int));
+    b->data[0] = 0;
+    
+    BigInteger d;
+    d.size = 1;
+    d.data = (unsigned int*) malloc(sizeof(unsigned int));
+    int i;
+    char n;
+    char c;
+    for(i = 0; i < l; i++)
+    {
+        c = str[i];
+        printf("Char = %c\n", c);
+        n = c - '0';
+        printf("Charn = %d\n", (unsigned int) n);
+        d.data[0] = (unsigned int) n;
+        b = times10(b);
+        printBIData(b);
+        b = addBI(b, &d);
+        printBIData(b);
+    }
+    deleteBI(&d);
+    
+    if (negative)
+    {
+        b = negateBI(b);
+    }
+    
+    return b;
+}
+
+void divideBI(BigInteger* a, BigInteger* b, BigInteger* result, BigInteger* remainder)
+{
+    if (b->size == 1 && b->data[0] = 0)
+    {
+        printf("Error: Division by zero\n");
+        exit(EXIT_FAILURE);
+    }
+    int aIsNegative = msbIsOneBI(a);
+    int bIsNegative = msbIsOneBI(a);
+    
+    if (aIsNegative)
+    {
+        a = negateBI(a);
+    }
+    if (bIsNegative)
+    {
+        b = negateBI(b);
+    }    
+    
+    remainder = copyBI(a);
+    
+    //TODO
+    
 }
