@@ -388,7 +388,7 @@ BigInteger* newBigInteger(BigInteger* b, const char* str)
     
     return b;
 }
-
+/*
 void divideBI(BigInteger* a, BigInteger* b, BigInteger* result, BigInteger* remainder)
 {
     if (b->size == 1 && b->data[0] = 0)
@@ -413,3 +413,4 @@ void divideBI(BigInteger* a, BigInteger* b, BigInteger* result, BigInteger* rema
     //TODO
     
 }
+*/
