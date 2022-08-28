@@ -1,18 +1,16 @@
 #include <limits.h>
 
-typedef struct
-{
-    int size; // in sizeof(int)
-    unsigned int *data;
-} BigInteger;
+extern struct bigInteger;
+typedef struct bigInteger *bigint;
 
-BigInteger copyBI(BigInteger* b);
-void deleteBI(BigInteger* b);
-void printBIData(BigInteger* b);
-BigInteger* resizeBI(BigInteger* b, int s);
-BigInteger* addBI(BigInteger* a, BigInteger* b);
-BigInteger* negateBI(BigInteger* b);
-BigInteger* subtractBI(BigInteger* a, BigInteger* b);
-BigInteger* leftShiftBI(BigInteger* b, int amount);
-BigInteger* times10(BigInteger* b);
-BigInteger* newBigInteger(BigInteger* b, const char* str);
+bigint newBigint(void);
+bigint copyBI(bigint b);
+void deleteBI(bigint b);
+void printBIData(bigint b);
+bigint resizeBI(bigint b, int s);
+bigint addBI(bigint a, bigint b);
+bigint negateBI(bigint b);
+bigint subtractBI(bigint a, bigint b);
+bigint leftShiftBI(bigint b, int amount);
+bigint times10(bigint b);
+bigint newBigInteger(bigint b, const char* str);

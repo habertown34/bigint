@@ -4,7 +4,30 @@
 
 #include "bigint.h"
 
-// Assumes little endian
+/* Small helper function,
+ * returns max of a and b */
+int max(int a, int b) {
+    if (a > b) return a;
+    else return b;
+}
+
+struct bigInteger
+{
+    int size; // in sizeof(int)
+    unsigned int *data;
+};
+
+/* Factory function
+ * Allocates new bigint without initializing and returns pointer */
+bigint newBigint() {
+    struct bigInteger b;
+    b.size = 1;
+    b.data = (unsigned int *) malloc(sizeof(unsigned int));
+    return &b;
+}
+
+/* Prints the value as bits
+ * Assumes little endian */
 void printBits(size_t const size, void const * const ptr)
 {
     unsigned char *b = (unsigned char*) ptr;
@@ -21,32 +44,30 @@ void printBits(size_t const size, void const * const ptr)
     puts("");
 }
 
-void printBIData(BigInteger* b)
+/* Print data of bigint */
+void printBIData(bigint b)
 {
     printf("Size: %d Bits: ", b->size);
     printBits(b->size * sizeof(unsigned int), b->data);
 }
 
+/* Checks if most significant bit is 1 */
 int msbIsOneInt(unsigned int n)
 {
     unsigned int mask = 1 << (8 * sizeof(unsigned int) - 1); // first bit 1, all other bits 0
     return (mask & n);
 }
 
-int msbIsOneBI(BigInteger* b)
+/* Checks if most significant bit is 1 */
+int msbIsOneBI(bigint b)
 {
     return msbIsOneInt(b->data[b->size - 1]);
 }
 
-int max(int a, int b)
+/* Clone bigint and return the clone */
+bigint copyBI(bigint b)
 {
-    if (a > b) return a;
-    else return b;
-}
-
-BigInteger copyBI(BigInteger* b)
-{
-    BigInteger n;
+    struct bigInteger n;
     n.size = b->size;
     n.data = (unsigned int*) malloc(n.size * sizeof(unsigned int));
     if (n.data == NULL)
@@ -59,15 +80,63 @@ BigInteger copyBI(BigInteger* b)
     {
         n.data[i] = b->data[i];
     }
-    return n;
+    return &n;
 }
 
-void deleteBI(BigInteger* b)
-{
+/* Deallocate a bigint */
+void deleteBI(bigint b) {
     free(b->data);
 }
 
-BigInteger* trimBI(BigInteger* b)
+/* Returns 1 if a > b
+ * 0 if equal
+ * and -1 if a < b */
+int compareBI(bigint a, bigint b) {
+    int aIsNegative = msbIsOneBI(a);
+    int bIsNegative = msbIsOneBI(b);
+
+    if (!aIsNegative && bIsNegative)
+        return 1;
+    if (aIsNegative && !bIsNegative)
+        return -1;
+
+    if (aIsNegative) {    
+        if (a->size != b->size) {
+            if (a->size > b->size)
+                return -1;
+            else
+                return 1;
+        }
+    } else {
+        if (a->size != b->size) {
+            if (a->size > b->size)
+                return 1;
+            else
+                return -1;
+        }    
+    }
+
+    int i;
+    for (i = a->size - 1; i >= 0; i--) {
+        if (a->data[i] > b->data[i]) {
+            if (aIsNegative) 
+                return -1;
+            else
+                return 1;
+        }
+
+        if (a->data[i] < b->data[i]) {
+            if (aIsNegative) 
+                return 1;
+            else
+                return -1;
+        }
+    }
+
+    return 0;
+}
+
+bigint trimBI(bigint b)
 {
     int isNegative = msbIsOneBI(b);
     int oldSize = b->size;
@@ -109,7 +178,7 @@ BigInteger* trimBI(BigInteger* b)
     return b;
 }
 
-BigInteger* resizeBI(BigInteger* b, int s)
+bigint resizeBI(bigint b, int s)
 {
     int isNegative = msbIsOneBI(b);
     int oldSize = b->size;
@@ -133,7 +202,7 @@ BigInteger* resizeBI(BigInteger* b, int s)
     return b;
 }
 
-BigInteger* negateBI(BigInteger* b)
+bigint negateBI(bigint b)
 {
     int i;
     for(i = 0; i < b->size; i++)
@@ -142,7 +211,7 @@ BigInteger* negateBI(BigInteger* b)
 
     }
 
-    BigInteger one;
+    struct bigInteger one;
     one.size = 1;
     one.data = (unsigned int*) malloc(sizeof(unsigned int));
     one.data[0] = 1;
@@ -160,7 +229,7 @@ BigInteger* negateBI(BigInteger* b)
 * 3) add them together, starting from the lowest bit
 * 4) overflow handling
 */
-BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
+bigint addBI(bigint a, bigint b) // add b to a
 {
     int aIsNegative = msbIsOneBI(a);
     int bIsNegative = msbIsOneBI(b);
@@ -184,8 +253,7 @@ BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
         a->size = size_max;
     }
     
-    BigInteger cb = copyBI(b);
-    BigInteger *c = &cb;
+    bigint c = copyBI(b);
     if (c->size != size_max)
     {
         c->data = realloc(c->data, size_max * (sizeof(unsigned int)));
@@ -268,17 +336,16 @@ BigInteger* addBI(BigInteger* a, BigInteger* b) // add b to a
     return a;
 }
 
-BigInteger* subtractBI(BigInteger* a, BigInteger* b)
-{
-    BigInteger c = copyBI(b);
-    BigInteger *pc = &c;
-    pc = negateBI(pc);
-    a = addBI(a, pc);
-    deleteBI(pc);
+/* Subtracts b from a and returns a */
+bigint subtractBI(bigint a, bigint b) {
+    bigint c = copyBI(b);
+    c = negateBI(c);
+    a = addBI(a, c);
+    deleteBI(c);
     return a;
 }
 
-BigInteger* leftShiftBI(BigInteger* b, int amount)
+bigint leftShiftBI(bigint b, int amount)
 {
     if (amount < 0)
     {
@@ -335,18 +402,17 @@ BigInteger* leftShiftBI(BigInteger* b, int amount)
     return b;
 }
 
-BigInteger* times10(BigInteger* b)
+bigint times10(bigint b)
 {
-    BigInteger a = copyBI(b);
-    BigInteger* pa = &a;
-    pa = leftShiftBI(pa, 1);
+    bigint a = copyBI(b);
+    a = leftShiftBI(a, 1);
     b = leftShiftBI(b, 3);
-    b = addBI(b, pa);
-    deleteBI(pa);
+    b = addBI(b, a);
+    deleteBI(a);
     return b;
 }
 
-BigInteger* newBigInteger(BigInteger* b, const char* str)
+bigint newBigInteger(bigint b, const char* str)
 {
     int l = strlen(str);
     printf("l = %d\n", l);
@@ -361,7 +427,7 @@ BigInteger* newBigInteger(BigInteger* b, const char* str)
     b->data = (unsigned int*) malloc(sizeof(unsigned int));
     b->data[0] = 0;
     
-    BigInteger d;
+    struct bigInteger d;
     d.size = 1;
     d.data = (unsigned int*) malloc(sizeof(unsigned int));
     int i;
@@ -388,16 +454,16 @@ BigInteger* newBigInteger(BigInteger* b, const char* str)
     
     return b;
 }
-/*
-void divideBI(BigInteger* a, BigInteger* b, BigInteger* result, BigInteger* remainder)
+
+void divideBI(bigint a, bigint b, bigint result, bigint remainder)
 {
-    if (b->size == 1 && b->data[0] = 0)
+    if (b->size == 1 && b->data[0] == 0)
     {
         printf("Error: Division by zero\n");
         exit(EXIT_FAILURE);
     }
     int aIsNegative = msbIsOneBI(a);
-    int bIsNegative = msbIsOneBI(a);
+    int bIsNegative = msbIsOneBI(b);
     
     if (aIsNegative)
     {
@@ -408,9 +474,20 @@ void divideBI(BigInteger* a, BigInteger* b, BigInteger* result, BigInteger* rema
         b = negateBI(b);
     }    
     
+    deleteBI(remainder);
     remainder = copyBI(a);
+    deleteBI(result);
+    result = newBigint();
+    result->data[0] = 0;
+
+    bigint one = newBigint();
+    one->data[0] = 1;
+
+    while(compareBI(remainder, b) == 1) {
+        subtractBI(remainder, b);
+        addBI(result, one);
+    }
     
     //TODO
-    
+    return;
 }
-*/

@@ -6,7 +6,7 @@
 
 int main()
 {
-    BigInteger b;
+    bigint b = newBigint();
     BigInteger* p = &b;
     //b.size = 2;
     //b.data = (unsigned int*) malloc((b.size)* sizeof(unsigned int));
