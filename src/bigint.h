@@ -2,7 +2,7 @@
 
 typedef struct bigInteger *bigint;
 
-typedef struct {
+typedef struct _div_bigint{
     bigint quotient;
     bigint remainder;
 } *div_bigint;

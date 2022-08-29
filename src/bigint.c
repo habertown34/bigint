@@ -16,7 +16,7 @@ struct bigInteger {
     unsigned int *data;
 };
 
-typedef struct {
+typedef struct _div_bigint_10 {
     bigint quotient;
     int remainder;
 } *div_bigint_10;
@@ -164,7 +164,7 @@ bigint trimBI(bigint b)
     {
         for(i = oldSize - 1; i > 0; i--)
         {
-            if (b->data[i] == 0)
+            if (b->data[i] == 0 && !msbIsOneInt(b->data[i-1]))
             {
                 newSize -= 1;
             }
@@ -174,7 +174,7 @@ bigint trimBI(bigint b)
     {
         for(i = oldSize - 1; i > 0; i--)
         {
-            if (b->data[i] == UINT_MAX)
+            if (b->data[i] == UINT_MAX && msbIsOneInt(b->data[i-1]))
             {
                 newSize -= 1;
             }
@@ -430,12 +430,12 @@ bigint times10(bigint b)
     return b;
 }
 
-bigint newBigInteger(const char* str)
-{
+/* Returns new allocated bigint from string */
+bigint newBigInteger(const char* str) {
     int l = strlen(str);
-    printf("l = %d\n", l);
+    //printf("l = %d\n", l);
     int negative = (str[0] == '-');
-    printf("%d\n", negative);
+    //printf("%d\n", negative);
     if (negative)
     {
         str++;
@@ -453,14 +453,14 @@ bigint newBigInteger(const char* str)
     char c;
     for (i = 0; i < l; i++) {
         c = str[i];
-        printf("Char = %c\n", c);
+        //printf("Char = %c\n", c);
         n = c - '0';
-        printf("Charn = %d\n", (unsigned int) n);
+        //printf("Charn = %d\n", (unsigned int) n);
         d.data[0] = (unsigned int) n;
         b = times10(b);
-        printBIData(b);
+        //printBIData(b);
         b = addBI(b, &d);
-        printBIData(b);
+        //printBIData(b);
     }
     free(d.data);
 
@@ -517,7 +517,7 @@ div_bigint divideBI(bigint a, bigint b) {
     }    
     deleteBI(one);
 
-    div_bigint result = (div_bigint) malloc(sizeof(div_bigint));
+    div_bigint result = (div_bigint) malloc(sizeof(struct _div_bigint));
     result->quotient = quotient;
     result->remainder = remainder;
     
@@ -526,15 +526,37 @@ div_bigint divideBI(bigint a, bigint b) {
 
 /* Divide bigint by ten */
 div_bigint_10 divideBI10(bigint b) {
-    div_bigint_10 result;
-    result->quotient = NULL;
-    result->remainder = 0;
+    bigint quotient = copyBI(b);
+    int remainder = 0;
+
+    int negative = msbIsOneBI(b);
+    if (negative) {
+        quotient = negateBI(quotient);
+    }
+
+    long helper;
+    int i;
+    for (i = b->size - 1; i >= 0; i--) {
+        helper = ((long) remainder * (1L << (8 * sizeof(unsigned int))) + b->data[i]);
+        quotient->data[i] = (int) (helper / 10);
+        remainder = (int) (helper % 10);
+    }
+
+    if (negative) {
+        quotient = negateBI(quotient);
+        remainder = 0 - remainder;
+    }
+
+    quotient = trimBI(quotient);
+
+    div_bigint_10 result = (div_bigint_10) malloc(sizeof(struct _div_bigint_10));
+    result->quotient = quotient;
+    result->remainder = remainder;
     return result;
 }
 
 /* Return a decimal representation of b */
 char* BItoString(bigint b) {
-    printf("start BItoString\n");
     int bIsNegative = msbIsOneBI(b);
 
     if (bIsNegative) {
@@ -551,25 +573,22 @@ char* BItoString(bigint b) {
     p--;
     
     bigint quotient;
-    bigint remainder;
-    int rem;
+    int remainder;
     bigint dividend = copyBI(b);
-    div_bigint divResult;
+    div_bigint_10 divResult;
 
     while(compareBI(dividend, ten) >= 0) {
-        divResult = divideBI(dividend, ten);
+        divResult = divideBI10(dividend);
         quotient = divResult->quotient;
         remainder = divResult->remainder;
         free((void*) divResult);
-
-        rem = remainder->data[0];
-        printf("rem = %d\n", rem);
-        deleteBI(remainder);
+        //printf("rem = %d\n", remainder);
 
         deleteBI(dividend);
+        //printBIData(quotient);
         dividend = quotient;
         
-        *p = '0' + rem;
+        *p = '0' + remainder;
         p--;
     }
 
