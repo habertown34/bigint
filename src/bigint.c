@@ -11,19 +11,34 @@ int max(int a, int b) {
     else return b;
 }
 
-struct bigInteger
-{
+struct bigInteger {
     int size; // in sizeof(int)
     unsigned int *data;
 };
 
+typedef struct {
+    bigint quotient;
+    int remainder;
+} *div_bigint_10;
+
 /* Factory function
  * Allocates new bigint without initializing and returns pointer */
 bigint newBigint() {
-    struct bigInteger b;
-    b.size = 1;
-    b.data = (unsigned int *) malloc(sizeof(unsigned int));
-    return &b;
+    bigint b = (bigint) malloc(sizeof(struct bigInteger));
+    if (b == NULL)
+    {
+        printf("Error: Can't allocate memory for new bigint\n");
+        return NULL;
+    }
+    b->size = 1;
+    b->data = (unsigned int *) malloc(sizeof(unsigned int));
+    if (b->data == NULL)
+    {
+        printf("Error: Can't allocate memory for new bigint\n");
+        return NULL;
+    }
+
+    return b;
 }
 
 /* Prints the value as bits
@@ -65,27 +80,29 @@ int msbIsOneBI(bigint b)
 }
 
 /* Clone bigint and return the clone */
-bigint copyBI(bigint b)
-{
-    struct bigInteger n;
-    n.size = b->size;
-    n.data = (unsigned int*) malloc(n.size * sizeof(unsigned int));
-    if (n.data == NULL)
-    {
+bigint copyBI(bigint b) {
+    bigint n = (bigint) malloc(sizeof(struct bigInteger));
+    if (n == NULL) {
         printf("Error: Can't allocate memory for copyBI\n");
-        exit(EXIT_FAILURE);
+        return NULL;
+    }
+    n->size = b->size;
+    n->data = (unsigned int*) malloc(n->size * sizeof(unsigned int));
+    if (n->data == NULL) {
+        printf("Error: Can't allocate memory for copyBI\n");
+        return NULL;
     }
     int i;
-    for(i = 0; i < n.size; i++)
-    {
-        n.data[i] = b->data[i];
+    for (i = 0; i < n->size; i++) {
+        n->data[i] = b->data[i];
     }
-    return &n;
+    return n;
 }
 
 /* Deallocate a bigint */
 void deleteBI(bigint b) {
     free(b->data);
+    free(b);
 }
 
 /* Returns 1 if a > b
@@ -202,6 +219,7 @@ bigint resizeBI(bigint b, int s)
     return b;
 }
 
+/* Negates b */
 bigint negateBI(bigint b)
 {
     int i;
@@ -216,7 +234,7 @@ bigint negateBI(bigint b)
     one.data = (unsigned int*) malloc(sizeof(unsigned int));
     one.data[0] = 1;
     b = addBI(b, &one);
-    deleteBI(&one);
+    free(one.data);
     b = trimBI(b);
 
     return b;
@@ -412,7 +430,7 @@ bigint times10(bigint b)
     return b;
 }
 
-bigint newBigInteger(bigint b, const char* str)
+bigint newBigInteger(const char* str)
 {
     int l = strlen(str);
     printf("l = %d\n", l);
@@ -423,8 +441,8 @@ bigint newBigInteger(bigint b, const char* str)
         str++;
         l -= 1;
     }
-    b->size = 1;
-    b->data = (unsigned int*) malloc(sizeof(unsigned int));
+
+    bigint b = newBigint();
     b->data[0] = 0;
     
     struct bigInteger d;
@@ -433,8 +451,7 @@ bigint newBigInteger(bigint b, const char* str)
     int i;
     char n;
     char c;
-    for(i = 0; i < l; i++)
-    {
+    for (i = 0; i < l; i++) {
         c = str[i];
         printf("Char = %c\n", c);
         n = c - '0';
@@ -445,8 +462,8 @@ bigint newBigInteger(bigint b, const char* str)
         b = addBI(b, &d);
         printBIData(b);
     }
-    deleteBI(&d);
-    
+    free(d.data);
+
     if (negative)
     {
         b = negateBI(b);
@@ -455,8 +472,8 @@ bigint newBigInteger(bigint b, const char* str)
     return b;
 }
 
-void divideBI(bigint a, bigint b, bigint result, bigint remainder)
-{
+/* Divide with remainder */
+div_bigint divideBI(bigint a, bigint b) {
     if (b->size == 1 && b->data[0] == 0)
     {
         printf("Error: Division by zero\n");
@@ -465,29 +482,111 @@ void divideBI(bigint a, bigint b, bigint result, bigint remainder)
     int aIsNegative = msbIsOneBI(a);
     int bIsNegative = msbIsOneBI(b);
     
-    if (aIsNegative)
-    {
+    if (aIsNegative) {
         a = negateBI(a);
     }
-    if (bIsNegative)
-    {
+    if (bIsNegative) {
         b = negateBI(b);
     }    
     
-    deleteBI(remainder);
-    remainder = copyBI(a);
-    deleteBI(result);
-    result = newBigint();
-    result->data[0] = 0;
+    bigint remainder = copyBI(a);
+    bigint quotient = newBigint();
+    quotient->data[0] = 0;
 
     bigint one = newBigint();
     one->data[0] = 1;
 
-    while(compareBI(remainder, b) == 1) {
+    while(compareBI(remainder, b) >= 0) {
         subtractBI(remainder, b);
-        addBI(result, one);
+        addBI(quotient, one);
     }
+
+    if ((aIsNegative && !bIsNegative) || (!aIsNegative && bIsNegative)) {
+        quotient = negateBI(quotient);
+    }
+
+    if (bIsNegative) {
+        remainder = negateBI(remainder);
+    }
+
+    if (aIsNegative) {
+        a = negateBI(a);
+    }
+    if (bIsNegative) {
+        b = negateBI(b);
+    }    
+    deleteBI(one);
+
+    div_bigint result = (div_bigint) malloc(sizeof(div_bigint));
+    result->quotient = quotient;
+    result->remainder = remainder;
     
-    //TODO
-    return;
+    return result;
+}
+
+/* Divide bigint by ten */
+div_bigint_10 divideBI10(bigint b) {
+    div_bigint_10 result;
+    result->quotient = NULL;
+    result->remainder = 0;
+    return result;
+}
+
+/* Return a decimal representation of b */
+char* BItoString(bigint b) {
+    printf("start BItoString\n");
+    int bIsNegative = msbIsOneBI(b);
+
+    if (bIsNegative) {
+        negateBI(b);
+    }
+
+    char *buf = (char *) malloc(12 * (b->size));
+
+    bigint ten = newBigint();
+    ten->data[0] = 10;
+
+    char *p = buf + 12 * (b->size) - 1;
+    *p = '\0';
+    p--;
+    
+    bigint quotient;
+    bigint remainder;
+    int rem;
+    bigint dividend = copyBI(b);
+    div_bigint divResult;
+
+    while(compareBI(dividend, ten) >= 0) {
+        divResult = divideBI(dividend, ten);
+        quotient = divResult->quotient;
+        remainder = divResult->remainder;
+        free((void*) divResult);
+
+        rem = remainder->data[0];
+        printf("rem = %d\n", rem);
+        deleteBI(remainder);
+
+        deleteBI(dividend);
+        dividend = quotient;
+        
+        *p = '0' + rem;
+        p--;
+    }
+
+    int div = dividend->data[0];
+    *p = '0' + div;
+
+    deleteBI(ten);
+    deleteBI(dividend);
+
+    if (bIsNegative) {
+        p--;
+        *p = '-';
+    }
+
+    char *str = (char*) malloc(strlen(p) + 1);
+    strcpy(str, p);
+    free((void*) buf);
+
+    return str;
 }

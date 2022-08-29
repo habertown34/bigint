@@ -1,7 +1,11 @@
 #include <limits.h>
 
-extern struct bigInteger;
 typedef struct bigInteger *bigint;
+
+typedef struct {
+    bigint quotient;
+    bigint remainder;
+} *div_bigint;
 
 bigint newBigint(void);
 bigint copyBI(bigint b);
@@ -13,4 +17,5 @@ bigint negateBI(bigint b);
 bigint subtractBI(bigint a, bigint b);
 bigint leftShiftBI(bigint b, int amount);
 bigint times10(bigint b);
-bigint newBigInteger(bigint b, const char* str);
+bigint newBigInteger(const char* str);
+char* BItoString(bigint);
