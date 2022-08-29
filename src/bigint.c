@@ -25,15 +25,13 @@ typedef struct _div_bigint_10 {
  * Allocates new bigint without initializing and returns pointer */
 bigint newBigint() {
 	bigint b = (bigint) malloc(sizeof(struct bigInteger));
-	if (b == NULL)
-	{
+	if (b == NULL) {
 		printf("Error: Can't allocate memory for new bigint\n");
 		return NULL;
 	}
 	b->size = 1;
 	b->data = (unsigned int *) malloc(sizeof(unsigned int));
-	if (b->data == NULL)
-	{
+	if (b->data == NULL) {
 		printf("Error: Can't allocate memory for new bigint\n");
 		return NULL;
 	}
@@ -41,10 +39,17 @@ bigint newBigint() {
 	return b;
 }
 
+/* Factory function
+ * Returns bigint with value of i */
+bigint newBigintFromInt(int i) {
+	bigint b = newBigint();
+	b->data[0] = i;
+	return b;
+}
+
 /* Prints the value as bits
  * Assumes little endian */
-void printBits(size_t const size, void const * const ptr)
-{
+void printBits(size_t const size, void const * const ptr) {
 	unsigned char *b = (unsigned char*) ptr;
 	unsigned char byte;
 	int i, j;
