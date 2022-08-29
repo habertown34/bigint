@@ -3,8 +3,8 @@
 typedef struct bigInteger *bigint;
 
 typedef struct _div_bigint{
-    bigint quotient;
-    bigint remainder;
+	bigint quotient;
+	bigint remainder;
 } *div_bigint;
 
 bigint newBigint(void);

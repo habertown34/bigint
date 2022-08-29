@@ -6,16 +6,16 @@
 
 int main()
 {
-    bigint b = newBigInteger("-3");
-    b = leftShiftBI(b, 3);
+	bigint b = newBigInteger("-3");
+	b = leftShiftBI(b, 3);
 
-    printBIData(b);
+	printBIData(b);
 
-    char *s = BItoString(b);
-    printf("%s\n", s);
+	char *s = BItoString(b);
+	printf("%s\n", s);
 
-    deleteBI(b);
-    free(s);
-    
-    return 0;
+	deleteBI(b);
+	free(s);
+	
+	return 0;
 }
