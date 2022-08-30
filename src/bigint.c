@@ -436,7 +436,7 @@ bigint times10(bigint b)
 }
 
 /* Returns new allocated bigint from string */
-bigint newBigInteger(const char* str) {
+bigint newBigIntFromString(const char* str) {
 	int l = strlen(str);
 	//printf("l = %d\n", l);
 	int negative = (str[0] == '-');
@@ -613,4 +613,45 @@ char* BItoString(bigint b) {
 	free((void*) buf);
 
 	return str;
+}
+
+/* Returns result of multiplication */
+bigint multiplyBI(bigint a, bigint b) {
+	int aIsNegative = msbIsOneBI(a);
+	int bIsNegative = msbIsOneBI(b);
+
+	if (aIsNegative) {
+		a = negateBI(a);
+	}
+	if (bIsNegative) {
+		b = negateBI(b);
+	}
+
+	bigint result = newBigintFromInt(0);
+
+	int mask;
+	int i, j;
+	for (i = 0; i <= b->size; i++) {
+		for (j = 0; j <= 8 * sizeof(unsigned int) - 1; j++) {
+			mask = 1 << j;
+			if (mask & b->data[i]) {
+				bigint adder = copyBI(a);
+				adder = leftShiftBI(adder, 32 * i + j);
+				result = addBI(result, adder);
+				deleteBI(adder);
+			}
+		}
+	}
+
+	if (aIsNegative) {
+		a = negateBI(a);
+	}
+	if (bIsNegative) {
+		b = negateBI(b);
+	}
+	if ((aIsNegative && !bIsNegative) || (!aIsNegative && bIsNegative)) {
+		result = negateBI(result);
+	}
+
+	return result;
 }

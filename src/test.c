@@ -4,17 +4,19 @@
 
 #include "bigint.h"
 
-int main()
-{
-	bigint b = newBigInteger("-3");
-	b = leftShiftBI(b, 3);
+int main() {
+	bigint b = newBigintFromInt(87217780);
+	bigint c = newBigIntFromString("375927823467392");
+	bigint d = multiplyBI(b, c);
 
-	printBIData(b);
+	//printBIData(b);
 
-	char *s = BItoString(b);
+	char *s = BItoString(d);
 	printf("%s\n", s);
 
 	deleteBI(b);
+	deleteBI(c);
+	deleteBI(d);
 	free(s);
 	
 	return 0;
