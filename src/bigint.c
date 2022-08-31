@@ -631,7 +631,7 @@ bigint multiplyBI(bigint a, bigint b) {
 
 	int mask;
 	int i, j;
-	for (i = 0; i <= b->size; i++) {
+	for (i = 0; i < b->size; i++) {
 		for (j = 0; j <= 8 * sizeof(unsigned int) - 1; j++) {
 			mask = 1 << j;
 			if (mask & b->data[i]) {

@@ -5,18 +5,19 @@
 #include "bigint.h"
 
 int main() {
-	bigint b = newBigintFromInt(87217780);
-	bigint c = newBigIntFromString("375927823467392");
+	bigint b = newBigIntFromString("-36");
+	bigint c = newBigIntFromString("-36");
 	bigint d = multiplyBI(b, c);
-
-	//printBIData(b);
-
-	char *s = BItoString(d);
+	bigint e = newBigIntFromString("-2");
+	bigint f = multiplyBI(d,e);
+	char *s = BItoString(f);
 	printf("%s\n", s);
 
 	deleteBI(b);
 	deleteBI(c);
 	deleteBI(d);
+	deleteBI(e);
+	deleteBI(f);
 	free(s);
 	
 	return 0;
