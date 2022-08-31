@@ -179,7 +179,7 @@ bigint trimBI(bigint b) {
 	}
 
 	if (newSize != oldSize) {
-		b->data = realloc(b->data, newSize * sizeof(unsigned int));
+		b->data = (unsigned int*) realloc(b->data, newSize * sizeof(unsigned int));
 		if (b->data == NULL) {
 			printf("Error: Reallocation in trimBI failed\n");
 			exit(EXIT_FAILURE);
@@ -199,7 +199,7 @@ bigint resizeBI(bigint b, int s) {
 		exit(EXIT_FAILURE);
 	}
 	b->size = s;
-	b->data = realloc(b->data, s * sizeof(unsigned int));
+	b->data = (unsigned int *) realloc(b->data, s * sizeof(unsigned int));
 	
 	int i;
 	for (i = oldSize; i < s; i++) { // initialize new memory
@@ -234,7 +234,7 @@ bigint addBI(bigint a, bigint b) {
 
 	int size_max = max(a->size, b->size);
 	if (a->size != size_max) {
-		a->data = realloc(a->data, size_max * (sizeof(unsigned int)));
+		a->data = (unsigned int*) realloc(a->data, size_max * (sizeof(unsigned int)));
 		if (a->data == NULL) {
 			printf("Error: Can't realloc memory for a in addBI\n");
 			exit(EXIT_FAILURE);
@@ -250,7 +250,7 @@ bigint addBI(bigint a, bigint b) {
 	
 	bigint c = copyBI(b);
 	if (c->size != size_max) {
-		c->data = realloc(c->data, size_max * (sizeof(unsigned int)));
+		c->data = (unsigned int*) realloc(c->data, size_max * (sizeof(unsigned int)));
 		if (c->data == NULL) {
 			printf("Error: Can't realloc memory for c in addBI\n");
 			exit(EXIT_FAILURE);
@@ -293,7 +293,7 @@ bigint addBI(bigint a, bigint b) {
 		if (!aIsNegative && resultIsNegative) {
 			//positive overflow
 			a->size += 1;
-			a->data = realloc(a->data, a->size * sizeof(unsigned int));
+			a->data = (unsigned int*) realloc(a->data, a->size * sizeof(unsigned int));
 			if (a->data == NULL) {
 				printf("Error: Reallocationg a in a positive overflow");
 				exit(EXIT_FAILURE);
@@ -303,7 +303,7 @@ bigint addBI(bigint a, bigint b) {
 		if (aIsNegative && !resultIsNegative) {
 			//negative overflow
 			a->size += 1;
-			a->data = realloc(a->data, a->size  * sizeof(unsigned int));
+			a->data = (unsigned int*) realloc(a->data, a->size  * sizeof(unsigned int));
 			if (a->data == NULL) {
 				printf("Error: Reallocationg a in a positive overflow");
 				exit(EXIT_FAILURE);
@@ -355,7 +355,7 @@ bigint leftShiftBI(bigint b, int amount) {
 				if (overflow) {
 					//positive overflow
 					b->size += 1;
-					b->data = realloc(b->data, b->size  * sizeof(unsigned int));
+					b->data = (unsigned int*) realloc(b->data, b->size  * sizeof(unsigned int));
 					if (b->data == NULL) {
 						printf("Error: Reallocationg b in a positive overflow in leftSHift");
 						exit(EXIT_FAILURE);

@@ -5,8 +5,8 @@
 #include "bigint.h"
 
 int main() {
-	bigint b = newBIFromString("-37836333927262");
-	bigint c = newBIFromString("12222234");
+	bigint b = newBIFromString("-227270");
+	bigint c = newBIFromString("2233");
 	div_bigint d = divideBI(b, c);
 	bigint quot = d->quotient;
 	bigint rem = d->remainder;
@@ -18,9 +18,9 @@ int main() {
 	deleteBI(c);
 	deleteBI(quot);
 	deleteBI(rem);
-	free(d);
-	free(sq);
-	free(sr);
+	free((void*) d);
+	free((void*) sq);
+	free((void*) sr);
 	
 	return 0;
 }
