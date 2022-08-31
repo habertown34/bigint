@@ -5,10 +5,10 @@
 #include "bigint.h"
 
 int main() {
-	bigint b = newBigIntFromString("-36");
-	bigint c = newBigIntFromString("-36");
+	bigint b = newBIFromString("-36");
+	bigint c = newBIFromString("-36");
 	bigint d = multiplyBI(b, c);
-	bigint e = newBigIntFromString("-2");
+	bigint e = newBIFromString("-2");
 	bigint f = multiplyBI(d,e);
 	char *s = BItoString(f);
 	printf("%s\n", s);

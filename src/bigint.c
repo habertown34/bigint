@@ -21,9 +21,8 @@ typedef struct _div_bigint_10 {
 	int remainder;
 } *div_bigint_10;
 
-/* Factory function
- * Allocates new bigint without initializing and returns pointer */
-bigint newBigint() {
+/* Allocates new bigint without initializing and returns pointer */
+bigint newBI() {
 	bigint b = (bigint) malloc(sizeof(struct bigInteger));
 	if (b == NULL) {
 		printf("Error: Can't allocate memory for new bigint\n");
@@ -41,8 +40,8 @@ bigint newBigint() {
 
 /* Factory function
  * Returns bigint with value of i */
-bigint newBigintFromInt(int i) {
-	bigint b = newBigint();
+bigint newBIFromInt(int i) {
+	bigint b = newBI();
 	b->data[0] = i;
 	return b;
 }
@@ -158,39 +157,30 @@ int compareBI(bigint a, bigint b) {
 	return 0;
 }
 
-bigint trimBI(bigint b)
-{
+/* Trim leading 0s (or 1s if b is negative) */
+bigint trimBI(bigint b) {
 	int isNegative = msbIsOneBI(b);
 	int oldSize = b->size;
 	int newSize = b->size;
 	int i;
 
-	if (!isNegative)
-	{
-		for(i = oldSize - 1; i > 0; i--)
-		{
-			if (b->data[i] == 0 && !msbIsOneInt(b->data[i-1]))
-			{
+	if (!isNegative) {
+		for(i = oldSize - 1; i > 0; i--) {
+			if (b->data[i] == 0 && !msbIsOneInt(b->data[i-1])) {
 				newSize -= 1;
 			}
 		}
-	}
-	else // b is negative
-	{
-		for(i = oldSize - 1; i > 0; i--)
-		{
-			if (b->data[i] == UINT_MAX && msbIsOneInt(b->data[i-1]))
-			{
+	} else { // b is negative
+		for (i = oldSize - 1; i > 0; i--) {
+			if (b->data[i] == UINT_MAX && msbIsOneInt(b->data[i-1])) {
 				newSize -= 1;
 			}
 		}
 	}
 
-	if (newSize != oldSize)
-	{
+	if (newSize != oldSize) {
 		b->data = realloc(b->data, newSize * sizeof(unsigned int));
-		if (b->data == NULL)
-		{
+		if (b->data == NULL) {
 			printf("Error: Reallocation in trimBI failed\n");
 			exit(EXIT_FAILURE);
 		}
@@ -200,12 +190,11 @@ bigint trimBI(bigint b)
 	return b;
 }
 
-bigint resizeBI(bigint b, int s)
-{
+/* Allocate new memory and add leading 0s (or 1s) */
+bigint resizeBI(bigint b, int s) {
 	int isNegative = msbIsOneBI(b);
 	int oldSize = b->size;
-	if (s < oldSize)
-	{
+	if (s < oldSize) {
 		printf("Error: reSize works only with bigger values");
 		exit(EXIT_FAILURE);
 	}
@@ -213,8 +202,7 @@ bigint resizeBI(bigint b, int s)
 	b->data = realloc(b->data, s * sizeof(unsigned int));
 	
 	int i;
-	for(i = oldSize; i < s; i++) // initialize new memory
-	{
+	for (i = oldSize; i < s; i++) { // initialize new memory
 		if (isNegative)
 			b->data[i] = UINT_MAX;
 		else
@@ -225,51 +213,35 @@ bigint resizeBI(bigint b, int s)
 }
 
 /* Negates b */
-bigint negateBI(bigint b)
-{
+bigint negateBI(bigint b) {
 	int i;
-	for(i = 0; i < b->size; i++)
-	{
+	for (i = 0; i < b->size; i++) {
 		b->data[i] = ~(b->data[i]);
-
 	}
 
-	struct bigInteger one;
-	one.size = 1;
-	one.data = (unsigned int*) malloc(sizeof(unsigned int));
-	one.data[0] = 1;
-	b = addBI(b, &one);
-	free(one.data);
+	bigint one = newBIFromInt(1);
+	b = addBI(b, one);
+	deleteBI(one);
 	b = trimBI(b);
 
 	return b;
 }
 
-/*
-* What we need to do:
-* 1) check if same size
-* 2) if not, bring both to the same size
-* 3) add them together, starting from the lowest bit
-* 4) overflow handling
-*/
-bigint addBI(bigint a, bigint b) // add b to a
-{
+/* Adds b to a and returns a */
+bigint addBI(bigint a, bigint b) {
 	int aIsNegative = msbIsOneBI(a);
 	int bIsNegative = msbIsOneBI(b);
 
 	int size_max = max(a->size, b->size);
-	if (a->size != size_max)
-	{
+	if (a->size != size_max) {
 		a->data = realloc(a->data, size_max * (sizeof(unsigned int)));
-		if (a->data == NULL)
-		{
+		if (a->data == NULL) {
 			printf("Error: Can't realloc memory for a in addBI\n");
 			exit(EXIT_FAILURE);
 		}
 		
 		int i;
-		for(i = (a->size); i < size_max; i++) // initialize new bytes
-		{
+		for (i = (a->size); i < size_max; i++) { // initialize new bytes
 			(a->data)[i] = 0;
 		}
 		
@@ -277,18 +249,15 @@ bigint addBI(bigint a, bigint b) // add b to a
 	}
 	
 	bigint c = copyBI(b);
-	if (c->size != size_max)
-	{
+	if (c->size != size_max) {
 		c->data = realloc(c->data, size_max * (sizeof(unsigned int)));
-		if (c->data == NULL)
-		{
+		if (c->data == NULL) {
 			printf("Error: Can't realloc memory for c in addBI\n");
 			exit(EXIT_FAILURE);
 		}
 		
 		int i;
-		for(i = (c->size); i < size_max; i++) // initialize new bytes
-		{
+		for (i = (c->size); i < size_max; i++) { // initialize new bytes
 			(c->data)[i] = 0;
 		}
 		
@@ -299,21 +268,15 @@ bigint addBI(bigint a, bigint b) // add b to a
 	int i;
 	int overflow = 0;
 	int oldOverflow = 0;
-	for(i = 0; i < size_max; i++)
-	{
-		if (UINT_MAX - a->data[i] < c->data[i])
-		{
+	for (i = 0; i < size_max; i++) {
+		if (UINT_MAX - a->data[i] < c->data[i]) {
 			overflow = 1;
-		}
-		else
-		{
+		} else {
 			overflow = 0;
 		}
 		a->data[i] += c->data[i];
-		if (oldOverflow)
-		{
-			if(a->data[i] == UINT_MAX)
-			{
+		if (oldOverflow) {
+			if (a->data[i] == UINT_MAX) {
 				overflow = 1;
 			}
 			a->data[i] += 1;
@@ -323,32 +286,25 @@ bigint addBI(bigint a, bigint b) // add b to a
 	/*
 	 * If a or b (only one of them) is negative, then we need to check if we can reduce the number instead of checking for overflow
 	 */
-	if ((aIsNegative && !bIsNegative) || (!aIsNegative && bIsNegative))
-	{
+	if ((aIsNegative && !bIsNegative) || (!aIsNegative && bIsNegative)) {
 		a = trimBI(a);
-	}
-	else
-	{
+	} else {
 		int resultIsNegative = msbIsOneBI(a);
-		if(!aIsNegative && resultIsNegative)
-		{
+		if (!aIsNegative && resultIsNegative) {
 			//positive overflow
 			a->size += 1;
 			a->data = realloc(a->data, a->size * sizeof(unsigned int));
-			if (a->data == NULL)
-			{
+			if (a->data == NULL) {
 				printf("Error: Reallocationg a in a positive overflow");
 				exit(EXIT_FAILURE);
 			}
 			a->data[a->size - 1] = 0;
 		}
-		if(aIsNegative && !resultIsNegative)
-		{
+		if (aIsNegative && !resultIsNegative) {
 			//negative overflow
 			a->size += 1;
 			a->data = realloc(a->data, a->size  * sizeof(unsigned int));
-			if (a->data == NULL)
-			{
+			if (a->data == NULL) {
 				printf("Error: Reallocationg a in a positive overflow");
 				exit(EXIT_FAILURE);
 			}
@@ -368,47 +324,39 @@ bigint subtractBI(bigint a, bigint b) {
 	return a;
 }
 
-bigint leftShiftBI(bigint b, int amount)
-{
-	if (amount < 0)
-	{
+/* Performs a semi left shift, actually multiplication by 2^amount */
+bigint leftShiftBI(bigint b, int amount) {
+	if (amount < 0) {
 		printf("Error: Amount is negative\n");
 		exit(EXIT_FAILURE);
 	}
 	int i;
 	int bIsNegative = msbIsOneBI(b);
-	if (bIsNegative)
-	{ // left shift only makes sense on positive Integers
+	if (bIsNegative) { // left shift only makes sense on positive Integers
 		b = negateBI(b);
 	}
-	for(i = 0; i < amount; i++)
-	{
+	for (i = 0; i < amount; i++) {
 		int j;
 		int overflow = 0;
 		int oldOverflow = 0;
 		int currSize = b->size;
-		for(j = 0; j < currSize; j++)
-		{
+		for (j = 0; j < currSize; j++) {
 			overflow = msbIsOneInt(b->data[j]);
 			b->data[j] = b->data[j] << 1;
-			if (oldOverflow) // if previous bits created an overflow, add 1 to this 
-			{
+			if (oldOverflow) { // if previous bits created an overflow, add 1 to this 
 				b->data[j] += 1;
 			}
 			oldOverflow = overflow;
 			
 			// if this is the highest part bits of the number, and there is an overflow
 			// add new number
-			if (j == b->size - 1)
-			{
+			if (j == b->size - 1) {
 				overflow = msbIsOneInt(b->data[j]);
-				if (overflow)
-				{
+				if (overflow) {
 					//positive overflow
 					b->size += 1;
 					b->data = realloc(b->data, b->size  * sizeof(unsigned int));
-					if (b->data == NULL)
-					{
+					if (b->data == NULL) {
 						printf("Error: Reallocationg b in a positive overflow in leftSHift");
 						exit(EXIT_FAILURE);
 					}
@@ -417,16 +365,15 @@ bigint leftShiftBI(bigint b, int amount)
 			}
 		}
 	}
-	if (bIsNegative)
-	{
+	if (bIsNegative) {
 		b = negateBI(b);
 	}
 	
 	return b;
 }
 
-bigint times10(bigint b)
-{
+/* Multiplies b by ten */
+bigint times10(bigint b) {
 	bigint a = copyBI(b);
 	a = leftShiftBI(a, 1);
 	b = leftShiftBI(b, 3);
@@ -436,18 +383,17 @@ bigint times10(bigint b)
 }
 
 /* Returns new allocated bigint from string */
-bigint newBigIntFromString(const char* str) {
+bigint newBIFromString(const char* str) {
 	int l = strlen(str);
 	//printf("l = %d\n", l);
 	int negative = (str[0] == '-');
 	//printf("%d\n", negative);
-	if (negative)
-	{
+	if (negative) {
 		str++;
 		l -= 1;
 	}
 
-	bigint b = newBigint();
+	bigint b = newBI();
 	b->data[0] = 0;
 	
 	struct bigInteger d;
@@ -458,19 +404,14 @@ bigint newBigIntFromString(const char* str) {
 	char c;
 	for (i = 0; i < l; i++) {
 		c = str[i];
-		//printf("Char = %c\n", c);
 		n = c - '0';
-		//printf("Charn = %d\n", (unsigned int) n);
 		d.data[0] = (unsigned int) n;
 		b = times10(b);
-		//printBIData(b);
 		b = addBI(b, &d);
-		//printBIData(b);
 	}
 	free(d.data);
 
-	if (negative)
-	{
+	if (negative) {
 		b = negateBI(b);
 	}
 	
@@ -479,8 +420,7 @@ bigint newBigIntFromString(const char* str) {
 
 /* Divide with remainder */
 div_bigint divideBI(bigint a, bigint b) {
-	if (b->size == 1 && b->data[0] == 0)
-	{
+	if (b->size == 1 && b->data[0] == 0) {
 		printf("Error: Division by zero\n");
 		exit(EXIT_FAILURE);
 	}
@@ -495,10 +435,10 @@ div_bigint divideBI(bigint a, bigint b) {
 	}    
 	
 	bigint remainder = copyBI(a);
-	bigint quotient = newBigint();
+	bigint quotient = newBI();
 	quotient->data[0] = 0;
 
-	bigint one = newBigint();
+	bigint one = newBI();
 	one->data[0] = 1;
 
 	while(compareBI(remainder, b) >= 0) {
@@ -570,7 +510,7 @@ char* BItoString(bigint b) {
 
 	char *buf = (char *) malloc(12 * (b->size));
 
-	bigint ten = newBigint();
+	bigint ten = newBI();
 	ten->data[0] = 10;
 
 	char *p = buf + 12 * (b->size) - 1;
@@ -587,10 +527,8 @@ char* BItoString(bigint b) {
 		quotient = divResult->quotient;
 		remainder = divResult->remainder;
 		free((void*) divResult);
-		//printf("rem = %d\n", remainder);
 
 		deleteBI(dividend);
-		//printBIData(quotient);
 		dividend = quotient;
 		
 		*p = '0' + remainder;
@@ -627,7 +565,7 @@ bigint multiplyBI(bigint a, bigint b) {
 		b = negateBI(b);
 	}
 
-	bigint result = newBigintFromInt(0);
+	bigint result = newBIFromInt(0);
 
 	int mask;
 	int i, j;
