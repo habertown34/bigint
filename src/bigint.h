@@ -1,8 +1,6 @@
 #ifndef _BIGINT_H_
 #define _BIGINT_H_
 
-#include <limits.h>
-
 typedef struct bigInteger *bigint;
 
 typedef struct _div_bigint{
