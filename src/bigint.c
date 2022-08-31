@@ -420,8 +420,81 @@ bigint newBIFromString(const char* str) {
 }
 
 /* Divide with remainder 
- * Slow implemenation, needs better algorithm */
+ * New implementation */
 div_bigint divideBI(bigint a, bigint b) {
+	if (b->size == 1 && b->data[0] == 0) {
+		printf("Error: Division by zero\n");
+		exit(EXIT_FAILURE);
+	}
+
+	int negativeA = msbIsOneBI(a);
+	int negativeB = msbIsOneBI(b);
+
+	if (negativeA) {
+		a = negateBI(a);
+	}
+	if (negativeB) {
+		b = negateBI(b);
+	}
+
+	div_bigint result = (div_bigint) malloc(sizeof(struct _div_bigint));
+	bigint quotient;
+	bigint remainder;
+
+	if (compareBI(a, b) == -1) {
+		quotient = newBIFromInt(0);
+		remainder = copyBI(a);
+	} else {
+		bigint divisor = copyBI(b);
+		int amount = 0;
+		while(compareBI(a, divisor) == 1) {
+			amount++;
+			divisor = leftShiftBI(divisor, 1);
+		}
+		deleteBI(divisor);
+		quotient = newBIFromInt(0);
+		remainder = copyBI(a);
+
+		int i;
+		for (i = amount - 1; i >= 0; i--) {
+			quotient = leftShiftBI(quotient, 1);
+			divisor = copyBI(b);
+			divisor = leftShiftBI(divisor, i);
+			if (compareBI(remainder, divisor) >= 0) {
+				bigint one = newBIFromInt(1);
+				quotient = addBI(quotient, one);
+				deleteBI(one);
+
+				remainder = subtractBI(remainder, divisor);				
+			}
+			deleteBI(divisor);
+		}
+	}
+
+	if ((negativeA && !negativeB) || (!negativeA && negativeB)) {
+		quotient = negateBI(quotient);
+	}
+
+	if (negativeB) {
+		remainder = negateBI(remainder);
+	}
+
+	if (negativeA) {
+		a = negateBI(a);
+	}
+	if (negativeB) {
+		b = negateBI(b);
+	}   
+
+	result->quotient = quotient;
+	result->remainder = remainder;
+
+	return result;
+}
+
+/* Divide with remainder 
+ * Slow implemenation, needs better algorithm */
+div_bigint divideBIOld(bigint a, bigint b) {
 	if (b->size == 1 && b->data[0] == 0) {
 		printf("Error: Division by zero\n");
 		exit(EXIT_FAILURE);
