@@ -5,20 +5,29 @@
 #include "bigint.h"
 
 int main() {
-	bigint b = newBIFromString("764327906707090250203467993");
-	bigint c = newBIFromString("3636236337252878");
+	bigint b = newBIFromString("3432379232");
+	bigint c = newBIFromString("2");
 	div_bigint d = divideBI(b, c);
-	bigint quot = d->quotient;
-	bigint rem = d->remainder;
+	bigint quot = d.quotient;
+	bigint rem = d.remainder;
 	char *sq = BItoString(quot);
 	char *sr = BItoString(rem);
 	printf("%s %s\n", sq, sr);
+
+	bigint f = newBIFromString("2147483648");
+	printf("%s\n", BItoString(f));
+	f = negateBI(f);
+	printf("%s\n", BItoString(f));
+	b = addBI(b, f);
+	char *sb = BItoString(b);
+	printf("%s\n", sb);
+	free(sb);
+	deleteBI(f);
 
 	deleteBI(b);
 	deleteBI(c);
 	deleteBI(quot);
 	deleteBI(rem);
-	free(d);
 	free(sq);
 	free(sr);
 	

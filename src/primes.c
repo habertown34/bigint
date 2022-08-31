@@ -3,10 +3,10 @@
 
 #include "bigint.h"
 
-typedef struct _factors {
+typedef struct {
 	int count;
 	bigint* numbers;
-} *factors;
+} factors;
 
 factors primeFactors(bigint);
 
@@ -18,15 +18,14 @@ int main(int argc, char **argv) {
 	bigint n = newBIFromString(argv[1]);
 	factors f = primeFactors(n);
 	int i;
-	for (i = 0; i < f->count; i++) {
-		char* s = BItoString(f->numbers[i]);
+	for (i = 0; i < f.count; i++) {
+		char* s = BItoString(f.numbers[i]);
 		printf("%s ", s);
 		free(s);
-		deleteBI(f->numbers[i]);
+		deleteBI(f.numbers[i]);
 	}
 	printf("\n");
-	free(f->numbers);
-	free(f);
+	free(f.numbers);
 	deleteBI(n);
 
 	return 0;
@@ -46,18 +45,17 @@ factors primeFactors(bigint n) {
 	while(compareBI(_n, dSquared) >= 0) {
 		deleteBI(dSquared);
 		div_bigint div = divideBI(_n, d);
-		if (compareBI(div->remainder, zero) == 0) {
+		if (compareBI(div.remainder, zero) == 0) {
 			count++;
 			res = (bigint*) realloc(res, count * sizeof(bigint));
 			res[count - 1] = copyBI(d);
 			deleteBI(_n);
-			_n = div->quotient;
+			_n = div.quotient;
 		} else {
-			deleteBI(div->quotient);
+			deleteBI(div.quotient);
 			d = addBI(d, one);
 		}
-		deleteBI(div->remainder);
-		free(div);
+		deleteBI(div.remainder);
 		dSquared = multiplyBI(d, d);
 	}
 	deleteBI(dSquared);
@@ -70,9 +68,9 @@ factors primeFactors(bigint n) {
 	deleteBI(zero);
 	deleteBI(one);
 
-	factors fac = (factors) malloc(sizeof(struct _factors));
-	fac->count = count;
-	fac->numbers = res;
+	factors fac;
+	fac.count = count;
+	fac.numbers = res;
 
 	return fac;
 }

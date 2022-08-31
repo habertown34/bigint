@@ -17,10 +17,10 @@ struct bigInteger {
 	unsigned int *data;
 };
 
-typedef struct _div_bigint_10 {
+typedef struct {
 	bigint quotient;
 	int remainder;
-} *div_bigint_10;
+} div_bigint_10;
 
 /* Allocates new bigint without initializing and returns pointer */
 bigint newBI() {
@@ -251,6 +251,8 @@ bigint addBI(bigint a, bigint b) {
 	
 	bigint c = copyBI(b);
 	if (c->size != size_max) {
+		c = resizeBI(c, size_max);
+		/*
 		c->data = (unsigned int*) realloc(c->data, size_max * (sizeof(unsigned int)));
 		if (c->data == NULL) {
 			printf("Error: Can't realloc memory for c in addBI\n");
@@ -262,7 +264,7 @@ bigint addBI(bigint a, bigint b) {
 			(c->data)[i] = 0;
 		}
 		
-		c->size = size_max;
+		c->size = size_max;*/
 	}    
 	
 	//now the adding
@@ -437,7 +439,7 @@ div_bigint divideBI(bigint a, bigint b) {
 		b = negateBI(b);
 	}
 
-	div_bigint result = (div_bigint) malloc(sizeof(struct _div_bigint));
+	div_bigint result;
 	bigint quotient;
 	bigint remainder;
 
@@ -486,61 +488,9 @@ div_bigint divideBI(bigint a, bigint b) {
 		b = negateBI(b);
 	}   
 
-	result->quotient = quotient;
-	result->remainder = remainder;
+	result.quotient = quotient;
+	result.remainder = remainder;
 
-	return result;
-}
-
-/* Divide with remainder 
- * Slow implemenation, needs better algorithm */
-div_bigint divideBIOld(bigint a, bigint b) {
-	if (b->size == 1 && b->data[0] == 0) {
-		printf("Error: Division by zero\n");
-		exit(EXIT_FAILURE);
-	}
-	int aIsNegative = msbIsOneBI(a);
-	int bIsNegative = msbIsOneBI(b);
-	
-	if (aIsNegative) {
-		a = negateBI(a);
-	}
-	if (bIsNegative) {
-		b = negateBI(b);
-	}    
-	
-	bigint remainder = copyBI(a);
-	bigint quotient = newBI();
-	quotient->data[0] = 0;
-
-	bigint one = newBI();
-	one->data[0] = 1;
-
-	while(compareBI(remainder, b) >= 0) {
-		subtractBI(remainder, b);
-		addBI(quotient, one);
-	}
-
-	if ((aIsNegative && !bIsNegative) || (!aIsNegative && bIsNegative)) {
-		quotient = negateBI(quotient);
-	}
-
-	if (bIsNegative) {
-		remainder = negateBI(remainder);
-	}
-
-	if (aIsNegative) {
-		a = negateBI(a);
-	}
-	if (bIsNegative) {
-		b = negateBI(b);
-	}    
-	deleteBI(one);
-
-	div_bigint result = (div_bigint) malloc(sizeof(struct _div_bigint));
-	result->quotient = quotient;
-	result->remainder = remainder;
-	
 	return result;
 }
 
@@ -569,9 +519,9 @@ div_bigint_10 divideBI10(bigint b) {
 
 	quotient = trimBI(quotient);
 
-	div_bigint_10 result = (div_bigint_10) malloc(sizeof(struct _div_bigint_10));
-	result->quotient = quotient;
-	result->remainder = remainder;
+	div_bigint_10 result;
+	result.quotient = quotient;
+	result.remainder = remainder;
 	return result;
 }
 
@@ -580,7 +530,7 @@ char* BItoString(bigint b) {
 	int bIsNegative = msbIsOneBI(b);
 
 	if (bIsNegative) {
-		negateBI(b);
+		b = negateBI(b);
 	}
 
 	char *buf = (char *) malloc(12 * (b->size));
@@ -599,9 +549,8 @@ char* BItoString(bigint b) {
 
 	while(compareBI(dividend, ten) >= 0) {
 		divResult = divideBI10(dividend);
-		quotient = divResult->quotient;
-		remainder = divResult->remainder;
-		free((void*) divResult);
+		quotient = divResult.quotient;
+		remainder = divResult.remainder;
 
 		deleteBI(dividend);
 		dividend = quotient;
@@ -619,6 +568,7 @@ char* BItoString(bigint b) {
 	if (bIsNegative) {
 		p--;
 		*p = '-';
+		b = negateBI(b);
 	}
 
 	char *str = (char*) malloc(strlen(p) + 1);

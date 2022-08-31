@@ -3,10 +3,10 @@
 
 typedef struct bigInteger *bigint;
 
-typedef struct _div_bigint{
+typedef struct {
 	bigint quotient;
 	bigint remainder;
-} *div_bigint;
+} div_bigint;
 
 bigint newBIFromInt(int);
 bigint newBIFromString(const char*);
