@@ -418,7 +418,8 @@ bigint newBIFromString(const char* str) {
 	return b;
 }
 
-/* Divide with remainder */
+/* Divide with remainder 
+ * Slow implemenation, needs better algorithm */
 div_bigint divideBI(bigint a, bigint b) {
 	if (b->size == 1 && b->data[0] == 0) {
 		printf("Error: Division by zero\n");

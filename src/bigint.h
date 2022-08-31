@@ -1,3 +1,6 @@
+#ifndef _BIGINT_H_
+#define _BIGINT_H_
+
 #include <limits.h>
 
 typedef struct bigInteger *bigint;
@@ -18,3 +21,6 @@ bigint negateBI(bigint);
 bigint addBI(bigint, bigint);
 bigint subtractBI(bigint, bigint);
 bigint multiplyBI(bigint, bigint);
+div_bigint divideBI(bigint a, bigint b);
+
+#endif
